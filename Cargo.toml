@@ -7,6 +7,7 @@ members = [
     #"tools/explorer-thumbnailer",
 ]
 default-members = ["crates/resvg"]
+exclude = ["crates/usvg/fuzz"]
 resolver = "2"
 
 [workspace.package]

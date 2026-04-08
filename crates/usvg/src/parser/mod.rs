@@ -177,10 +177,16 @@ pub fn decompress_svgz(data: &[u8]) -> Result<Vec<u8>, Error> {
 #[inline]
 pub(crate) fn f32_bound(min: f32, val: f32, max: f32) -> f32 {
     debug_assert!(min.is_finite());
-    debug_assert!(val.is_finite());
     debug_assert!(max.is_finite());
 
-    if val > max {
+    // Clamp non-finite values: NaN and negative infinity to min, positive infinity to max.
+    // SVG attribute parsing can produce these from extreme numeric strings (e.g. "4e38")
+    // that overflow f32 range when cast from f64.
+    if val.is_nan() || val == f32::NEG_INFINITY {
+        min
+    } else if val == f32::INFINITY {
+        max
+    } else if val > max {
         max
     } else if val < min {
         min
