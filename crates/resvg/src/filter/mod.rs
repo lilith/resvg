@@ -241,10 +241,16 @@ fn from_linear_rgb(data: &mut [RGBA8]) {
 #[inline]
 fn f32_bound(min: f32, val: f32, max: f32) -> f32 {
     debug_assert!(min.is_finite());
-    debug_assert!(val.is_finite());
     debug_assert!(max.is_finite());
 
-    if val > max {
+    // Clamp non-finite values: NaN and negative infinity to min, positive infinity to max.
+    // SVG attribute parsing can produce these from extreme numeric strings or filter
+    // computations (e.g. gamma with negative exponent).
+    if val.is_nan() || val == f32::NEG_INFINITY {
+        min
+    } else if val == f32::INFINITY {
+        max
+    } else if val > max {
         max
     } else if val < min {
         min
